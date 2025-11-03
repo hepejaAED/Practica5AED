@@ -332,7 +332,7 @@ df_imputed<-df_outliers %>%  mutate(Petal.Length1=ifelse(is.na(Petal.Length),mea
 
 ```{r Solucion ejercicio 9b, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
-df_outliers %>% group_by(Species) %>% 
+df_imputed2<-df_outliers %>% group_by(Species) %>% 
   mutate(Petal.Length2=ifelse(is.na(Petal.Length),mean(Petal.Length),Petal.Length))
 
 ```
@@ -344,15 +344,42 @@ Vamos a comparar ahora los dos métodos de imputación gráficamente eliminando 
   * Recalcula las reglas de identificación de outliers (Ejercicio 6) para la nueva variable `Petal.Length2`.
   
 ```{r Solucion ejercicio 10a, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
+df_outliers2<-df_imputed2 %>%mutate(across(.cols=where(is.numeric),.fns=list(reglasigma=~reglasigma(.x),reglahampel=~reglahampel(.x),mreglaboxplot=~reglaboxplot(.x),reglapercentil=~reglapercentil(.x))))
 
- 
 ```
 
   * Representa los dos tipos de imputación empleados en un gráfico de dispersión (`Petal.Length1` vs. `Petal.Length2`) eliminando los outliers identificados con la regla `reglapercentil` y poniendo en diferente color los datos originales y los imputados.
 
 ```{r Solucion ejercicio 10b, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
+df_outliers_long <- df_outliers %>%
+  # Seleccionamos la variable base y las columnas de outlier asociadas
+  select(Petal.Length2, starts_with("Petal.Length2")) %>%
+  # Convertimos las columnas de las distintas reglas a formato largo
+  pivot_longer(
+    cols = starts_with("Petal.Length2"),
+    names_to = "regla",
+    values_to = "outlier"
+  ) %>%
+  # Opcional: limpiar nombres (quitar el prefijo "Petal.Length_")
+  mutate(regla = sub("Petal.Length2", "", regla))
 
+# Visualización
+ggplot(df_outliers_long, aes(x = regla, y = Petal.Length2, color = outlier)) +
+  geom_point(position = "jitter", size = 2, alpha = 0.7) +
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black", "NA" = "grey")) +
+  labs(
+    title = "Detección de outliers en Petal.Length2 según distintos métodos",
+    x = "Método de detección",
+    y = "Petal.Length2",
+    color = "Outlier"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+ 
 
 ```
 
