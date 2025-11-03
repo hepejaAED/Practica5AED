@@ -327,7 +327,7 @@ Se puede realizar una imputación generalizada (usando todos los valores de la v
   * Imputa los missing data en `Petal.Length` empleando la media. Nota: Puedes reemplazar los valores vacios usando `mutate` con `ifelse` creando una nueva variable `Petal.Length1`.
 
 ```{r Solucion ejercicio 9a, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
-df_imputed<-df_outliers %>%  mutate(Petal.Length1=ifelse(is.na(Petal.Length),mean(Petal.Length),Petal.Length))
+df_imputed<-df_outliers %>%  mutate(Petal.Length1=if_else(is.na(Petal.Length),mean(Petal.Length),Petal.Length))
 
 ```
 
@@ -336,7 +336,7 @@ df_imputed<-df_outliers %>%  mutate(Petal.Length1=ifelse(is.na(Petal.Length),mea
 ```{r Solucion ejercicio 9b, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
 df_imputed2<-df_outliers %>% group_by(Species) %>% 
-  mutate(Petal.Length2=ifelse(is.na(Petal.Length),mean(Petal.Length),Petal.Length))
+  mutate(Petal.Length2=if_else(is.na(Petal.Length),mean(Petal.Length),Petal.Length))
 
 ```
 
@@ -347,7 +347,19 @@ Vamos a comparar ahora los dos métodos de imputación gráficamente eliminando 
   * Recalcula las reglas de identificación de outliers (Ejercicio 6) para la nueva variable `Petal.Length2`.
   
 ```{r Solucion ejercicio 10a, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
-df_outliers2<-df_imputed2 %>%mutate(across(.cols=where(is.numeric),.fns=list(reglasigma=~reglasigma(.x),reglahampel=~reglahampel(.x),mreglaboxplot=~reglaboxplot(.x),reglapercentil=~reglapercentil(.x))))
+df_outliers2 <- df_imputed2 %>%
+  mutate(across(
+    .cols = Petal.Length2,
+    .fns = list(
+      reglasigma = ~reglasigma(.x),
+      reglahampel = ~reglahampel(.x),
+      # CORRECCIÓN: Cambiamos 'mreglaboxplot' por 'reglaboxplot' para usar el nombre de la función
+      reglaboxplot = ~reglaboxplot(.x), 
+      reglapercentil = ~reglapercentil(.x)
+    ),
+    # Esto nombra las nuevas columnas con el nombre de la clave de la lista (reglasigma, reglahampel, etc.)
+    .names = "{.fn}" 
+  ))
 
 ```
 
@@ -355,34 +367,43 @@ df_outliers2<-df_imputed2 %>%mutate(across(.cols=where(is.numeric),.fns=list(reg
 
 ```{r Solucion ejercicio 10b, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 
-df_outliers_long <- df_outliers %>%
-  # Seleccionamos la variable base y las columnas de outlier asociadas
-  select(Petal.Length2, starts_with("Petal.Length2")) %>%
-  # Convertimos las columnas de las distintas reglas a formato largo
-  pivot_longer(
-    cols = starts_with("Petal.Length2"),
-    names_to = "regla",
-    values_to = "outlier"
-  ) %>%
-  # Opcional: limpiar nombres (quitar el prefijo "Petal.Length_")
-  mutate(regla = sub("Petal.Length2", "", regla))
+# Solucion ejercicio 10a (CORREGIDO)
+df_imputed2 <- df_na %>%
+  # 1. Crear la variable de control 'imputado'
+  mutate(imputado = is.na(Petal.Length)) %>%
+  # 2. Imputar con el Método 1 (Ejemplo: Media Global)
+  mutate(Petal.Length1 = coalesce(Petal.Length, mean(Petal.Length, na.rm = TRUE))) %>%
+  # 3. Imputar con el Método 2 (Ejemplo: Mediana Global)
+  mutate(Petal.Length2 = coalesce(Petal.Length, median(Petal.Length, na.rm = TRUE)))
 
-# Visualización
-ggplot(df_outliers_long, aes(x = regla, y = Petal.Length2, color = outlier)) +
-  geom_point(position = "jitter", size = 2, alpha = 0.7) +
-  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black", "NA" = "grey")) +
+df_outliers2 <- df_imputed2 %>%
+  mutate(across(
+    .cols = Petal.Length2,
+    .fns = list(
+      reglasigma = ~reglasigma(.x),
+      reglahampel = ~reglahampel(.x),
+      reglaboxplot = ~reglaboxplot(.x), # Clave corregida
+      reglapercentil = ~reglapercentil(.x)
+    ),
+    .names = "{.fn}"
+  ))
+
+# Solucion ejercicio 10b (USANDO df_outliers2 CORRECTAMENTE)
+df_outliers2 %>% 
+  # Filtrar: Mantiene FALSE (no outlier) y NA (si es que los hay en la regla)
+  filter(reglapercentil == FALSE | is.na(reglapercentil)) %>% 
+  ggplot(aes(x = Petal.Length1, y = Petal.Length2, color = imputado)) +
+  geom_point(alpha = 0.8) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") + 
   labs(
-    title = "Detección de outliers en Petal.Length2 según distintos métodos",
-    x = "Método de detección",
-    y = "Petal.Length2",
-    color = "Outlier"
+    title = "Comparación de dos Métodos de Imputación (Outliers por Percentil Eliminados)",
+    subtitle = "Color indica si el dato original era NA",
+    x = "Petal.Length Imputado con Método 1",
+    y = "Petal.Length Imputado con Método 2",
+    color = "¿Es Imputado?"
   ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
- 
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "blue")) +
+  theme_minimal()
 
 ```
 
