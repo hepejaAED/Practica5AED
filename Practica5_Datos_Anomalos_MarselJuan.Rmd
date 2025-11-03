@@ -163,6 +163,8 @@ clean_iris %>% summarise(across(.cols=(Petal.Length),.fns=list(mean=~mean(.x),sd
 
 df_na %>% summarise(across(.cols=(Petal.Length),.fns=list(mean=~mean(.x,na.rm=T),sd=~sd(.x,na.rm=T),mediana=~median(.x,na.rm=T),MADM=~1.4826*median(abs(.x-median(.x,na.rm=T)),,na.rm=T),IQR=~IQR(.x,na.rm=T))))
 ```
+Vemos como la mediana y el MADM no cambian entre los dos conjuntos, el IQR cambia muy poco y la media y la desviación cambian mucho porque estas métricas son muy sensibles a valores faltantes y outliers.
+
 
 
 ## Ejercicio 5: Métodos de detección de outliers
@@ -179,17 +181,54 @@ Escribe una función que detecte los outliers de un vector $x$ para cada uno de 
 
 ```{r , include = FALSE}
 # Regla 3 sigma
-
+reglasigma<-function(x){
+  if(all(is.na(x))){
+    return(rep(NA,length(x)))
+  }
+  m<-mean(x,na.rm=T)
+  s<- sd(x,na.rm=T)
+  outliers<-if_else(abs(x-m)>3*s,T,F)
+  return(outliers)
+}
 
 # Identificador Hampel
 
-
+reglahampel<-function(x){
+  if(all(is.na(x))){
+    return(rep(NA,length(x)))
+  }
+  m<-mean(x,na.rm=T)
+  MADM<-1.4826*median(abs(x-m))
+  outliers<-if_else(abs(x-m)>3*MADM,T,F)
+  return(outliers)
+}
 
 # Regla boxplot
-
+reglaboxplot<-function(x){
+  if(all(is.na(x))){
+    return(rep(NA,length(x)))
+  }
+  xu<-quantile(x, 0.75, na.rm = TRUE)
+  xi<-quantile(x, 0.25, na.rm = TRUE)
+  IQR<-xu-xi
+  outliers<-if_else((x>xu+1.5*IQR)|(x<xi-1.5*IQR),T,F)
+  return(outliers)
+}
 
 # Percentiles
+reglapercentil<-function(x){
+  if(all(is.na(x))){
+    return(rep(NA,length(x)))
+  }
+  xu<-quantile(x, 0.05, na.rm = TRUE)
+  xi<-quantile(x, 0.95, na.rm = TRUE)
 
+  outliers<-if_else((x<xu)|(x>xi),T,F)
+  return(outliers)
+}
+
+
+df_outliers<-clean_iris %>%mutate(across(.cols=where(is.numeric),.fns=list(reglasigma=~reglasigma(.x),reglahampel=~reglahampel(.x),mreglaboxplot=~reglaboxplot(.x),reglapercentil=~reglapercentil(.x))))
 ```
 
 
