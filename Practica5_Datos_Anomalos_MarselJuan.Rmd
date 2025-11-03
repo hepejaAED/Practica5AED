@@ -134,6 +134,10 @@ df_na<-dirty_iris %>% mutate(across(where(is.numeric),~if_else(is.infinite(.) | 
   * Emplea después la función `na.omit` para quedarnos solo con las filas con datos completos en un nuevo data frame `clean_iris`.
 
 ```{r Solucion ejercicio 3, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
+sum(complete.cases(df_na))/length(df_na)
+
+clean_iris <- na.omit(df_na)
+
 
 ```
 
@@ -155,7 +159,9 @@ Hazlo para el data frame con observaciones completas `clean_iris` (que no tiene 
   * Compara los resultados para los dos conjuntos en la variable `Petal.Length`.
 
 ```{r , include = TRUE}
+clean_iris %>% summarise(across(.cols=(Petal.Length),.fns=list(mean=~mean(.x),sd=~sd(.x),mediana=~median(.x),MADM=~1.4826*median(abs(.x-median(.x))),IQR=~IQR(.x))))
 
+df_na %>% summarise(across(.cols=(Petal.Length),.fns=list(mean=~mean(.x,na.rm=T),sd=~sd(.x,na.rm=T),mediana=~median(.x,na.rm=T),MADM=~1.4826*median(abs(.x-median(.x,na.rm=T)),,na.rm=T),IQR=~IQR(.x,na.rm=T))))
 ```
 
 
