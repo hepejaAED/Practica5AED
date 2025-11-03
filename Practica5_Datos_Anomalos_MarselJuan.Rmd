@@ -228,7 +228,6 @@ reglapercentil<-function(x){
 }
 
 
-df_outliers<-clean_iris %>%mutate(across(.cols=where(is.numeric),.fns=list(reglasigma=~reglasigma(.x),reglahampel=~reglahampel(.x),mreglaboxplot=~reglaboxplot(.x),reglapercentil=~reglapercentil(.x))))
 ```
 
 
@@ -238,7 +237,7 @@ Utiliza la función `mutate` y `across` para identificar los outliers en la vari
 Nota: podría extenderse la aplicación a todas las variables numéricas usando también `mutate`, `across` y `where`. 
 
 ```{r Solucion ejercicio 6, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
-
+df_outliers<-clean_iris %>%mutate(across(.cols=where(is.numeric),.fns=list(reglasigma=~reglasigma(.x),reglahampel=~reglahampel(.x),mreglaboxplot=~reglaboxplot(.x),reglapercentil=~reglapercentil(.x))))
 
 
 ```
