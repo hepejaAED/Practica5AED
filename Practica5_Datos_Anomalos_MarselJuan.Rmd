@@ -91,6 +91,15 @@ dirty_iris %>% arrange(desc(Petal.Length))
 dirty_iris %>% arrange(desc(Petal.Width))
 ```
 
+Los valores de sepal.length mínimo es 0 lo cuál es inconsistente
+El valor mínimo de Sepal.Width es negativo y es imposible porque es un tipo de dato de razón
+El valor mínimo de Petal.Length es 0 que también es imposible
+
+El valor máximo de Petal.Length es 63 que es mucho más grande que el resto de datos (outlier)
+Los valores máximos de Sepal.Width también llaman la atención y sobresalen del resto
+El valor de Sepal.Length también sorbe sale del máximo.
+Hay un dato inf en petal.Width
+
 ## Ejercicio 2: Valores especiales
 
 Visualizar los datos puede ser muy revelador, pero en general, especialmente para conjuntos de datos grandes, realizaremos este análisis de forma automática.
