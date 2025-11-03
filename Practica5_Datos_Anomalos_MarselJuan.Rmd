@@ -89,6 +89,8 @@ dirty_iris %>% arrange(desc(Sepal.Length))
 dirty_iris %>% arrange(desc(Sepal.Width))
 dirty_iris %>% arrange(desc(Petal.Length))
 dirty_iris %>% arrange(desc(Petal.Width))
+
+table(dirty_iris$Species) 
 ```
 
 Los valores de sepal.length mínimo es 0 lo cuál es inconsistente
@@ -99,6 +101,8 @@ El valor máximo de Petal.Length es 63 que es mucho más grande que el resto de 
 Los valores máximos de Sepal.Width también llaman la atención y sobresalen del resto
 El valor de Sepal.Length también sorbe sale del máximo.
 Hay un dato inf en petal.Width
+
+Los conjuntos de Species están bien
 
 ## Ejercicio 2: Valores especiales
 
@@ -119,6 +123,7 @@ Nota: Puedes reemplazar los valores para cada variable del dataframe usando `mut
 ```{r Solucion ejercicio 2, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
 # DEBEMOS ELIMINAR TAMBIEN LOS VALROES IGUALES A CERO YA QUE SE TRATA DE LONGITUDES DE PARTES DE UNA FLOR. NO PUEDEN SER O
 
+df_na<-dirty_iris %>% mutate(across(where(is.numeric),~if_else(is.infinite(.) | .<=0,NA,.)))
 
 ```
 
