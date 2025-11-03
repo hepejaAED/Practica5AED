@@ -250,6 +250,25 @@ En los métodos de detección de outliers analizados, examina los resultados com
   * Los valores etiquetados como outliers (ordenados de menor a mayor).
 
 ```{r Solucion ejercicio 7, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
+resumen_outliers <- df_outliers %>%
+  summarise(
+    across(
+      .cols = ends_with("reglasigma"),
+      .fns = ~ sum(.x, na.rm = TRUE)
+    ),
+    across(
+      .cols = ends_with("reglahampel"),
+      .fns = ~ sum(.x, na.rm = TRUE)
+    ),
+    across(
+      .cols = ends_with("reglaboxplot"),
+      .fns = ~ sum(.x, na.rm = TRUE)
+    ),
+    across(
+      .cols = ends_with("reglapercentil"),
+      .fns = ~ sum(.x, na.rm = TRUE)
+    )
+  )
 
 ```
 
@@ -260,7 +279,7 @@ Representa gráficamente los datos de `Petal.Length` (distribución de puntos en
 Nota: usa en `geom_point` con la opción `position='jitter'` para mejorar la legibilidad del gráfico.
 
 ```{r Solucion ejercicio 8, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
-
+resumen_outliers %>% ggplot(aes(y=Petal.Length,x=c("")))
 ```
 
 # Imputación de datos
