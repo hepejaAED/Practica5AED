@@ -279,7 +279,35 @@ Representa gráficamente los datos de `Petal.Length` (distribución de puntos en
 Nota: usa en `geom_point` con la opción `position='jitter'` para mejorar la legibilidad del gráfico.
 
 ```{r Solucion ejercicio 8, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
-resumen_outliers %>% ggplot(aes(y=Petal.Length,x=c("")))
+
+
+df_outliers_long <- df_outliers %>%
+  # Seleccionamos la variable base y las columnas de outlier asociadas
+  select(Petal.Length, starts_with("Petal.Length_")) %>%
+  # Convertimos las columnas de las distintas reglas a formato largo
+  pivot_longer(
+    cols = starts_with("Petal.Length_"),
+    names_to = "regla",
+    values_to = "outlier"
+  ) %>%
+  # Opcional: limpiar nombres (quitar el prefijo "Petal.Length_")
+  mutate(regla = sub("Petal.Length_", "", regla))
+
+# Visualización
+ggplot(df_outliers_long, aes(x = regla, y = Petal.Length, color = outlier)) +
+  geom_point(position = "jitter", size = 2, alpha = 0.7) +
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black", "NA" = "grey")) +
+  labs(
+    title = "Detección de outliers en Petal.Length según distintos métodos",
+    x = "Método de detección",
+    y = "Petal.Length",
+    color = "Outlier"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 ```
 
 # Imputación de datos
