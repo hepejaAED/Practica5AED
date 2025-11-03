@@ -135,8 +135,11 @@ df_na<-dirty_iris %>% mutate(across(where(is.numeric),~if_else(is.infinite(.) | 
   * Emplea después la función `na.omit` para quedarnos solo con las filas con datos completos en un nuevo data frame `clean_iris`.
 
 ```{r Solucion ejercicio 3, include=TRUE, echo=TRUE, eval=TRUE, results=TRUE}
-sum(complete.cases(df_na))/length(df_na)
-
+num_completas <- sum(complete.cases(df_na))
+total_filas <- nrow(df_na)
+proporcion_completa <- num_completas / total_filas
+porcentaje_completa <- proporcion_completa * 100
+porcentaje_completa
 clean_iris <- na.omit(df_na)
 
 
